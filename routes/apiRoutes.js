@@ -3,43 +3,41 @@ const fs = require("fs");
 module.exports = function (app) {
 
     //API routes
+    //Returns list of notes
     app.get('/api/notes', (req, res) => {
-        const notesJSON = fs.readFileSync("./db/db.json", "utf8");
+        const notes = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
 
-        return res.json(JSON.parse(notesJSON));
+        return res.json(notes);
     });
 
+    //Post a new note to the list of notes
     app.post('/api/notes', (req, res) => {
 
-        const notesJSON = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
-        notesJSON.push(req.body);
+        const notes = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
+        notes.push(req.body);
 
-        for (let i = 0; i < notesJSON.length; i++)
-            notesJSON[i].id = i + 1;
+        for (let i = 0; i < notes.length; i++)
+            notes[i].id = i + 1;
 
-        fs.writeFileSync("./db/db.json", JSON.stringify(notesJSON));
+        fs.writeFileSync("./db/db.json", JSON.stringify(notes));
 
         return res.json(req.body);
     });
 
+    //Delete a note from the list of notes
     app.delete('/api/notes/:id', (req, res) => {
         const id = req.params.id;
-        const notesJSON = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
+        const notes = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
 
-        console.log(notesJSON);
+        for (let i = 0; i < notes.length; i++) {
 
-        for (let i = 0; i < notesJSON.length; i++) {
+            if (notes[i].id === parseInt(id)) {
+                notes.splice(i, 1);
 
-            console.log(`id: ${id}`);
-            console.log(notesJSON[i].id);
+                for (let i = 0; i < notes.length; i++)
+                    notes[i].id = i + 1;
 
-            if (notesJSON[i].id === parseInt(id)) {
-                notesJSON.splice(i, 1);
-
-                for (let i = 0; i < notesJSON.length; i++)
-                    notesJSON[i].id = i + 1;
-
-                fs.writeFileSync("./db/db.json", JSON.stringify(notesJSON));
+                fs.writeFileSync("./db/db.json", JSON.stringify(notes));
                 return res.json(true);
             }
         }
